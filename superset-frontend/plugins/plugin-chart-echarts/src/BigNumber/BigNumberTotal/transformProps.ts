@@ -16,6 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+import { ColorFormatters, getColorFormatters } from '@superset-ui/chart-controls';
 import {
   getNumberFormatter,
   GenericDataType,
@@ -37,6 +38,7 @@ export default function transformProps(chartProps: BigNumberTotalChartProps) {
     forceTimestampFormatting,
     timeFormat,
     yAxisFormat,
+    colorThreshold,
   } = formData;
   const { data = [], coltypes = [] } = queriesData[0];
   const granularity = extractTimegrain(rawFormData as QueryFormData);
@@ -67,6 +69,11 @@ export default function transformProps(chartProps: BigNumberTotalChartProps) {
 
   const { onContextMenu } = hooks;
 
+  const defaultColorFormatters = [] as ColorFormatters;
+
+  const colorThresholdFormatters =
+    getColorFormatters(colorThreshold, data, false) ?? defaultColorFormatters;
+
   return {
     width,
     height,
@@ -76,5 +83,6 @@ export default function transformProps(chartProps: BigNumberTotalChartProps) {
     subheaderFontSize,
     subheader: formattedSubheader,
     onContextMenu,
+    colorThresholdFormatters,
   };
 }

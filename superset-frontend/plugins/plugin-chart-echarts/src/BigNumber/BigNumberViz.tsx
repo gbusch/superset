@@ -32,6 +32,7 @@ import { EChartsCoreOption } from 'echarts';
 import Echart from '../components/Echart';
 import { BigNumberWithTrendlineFormData, TimeSeriesDatum } from './types';
 import { EventHandlers } from '../types';
+import { ColorFormatters } from '@superset-ui/chart-controls';
 
 const defaultNumberFormatter = getNumberFormatter();
 
@@ -71,6 +72,7 @@ type BigNumberVisProps = {
   ) => void;
   xValueFormatter?: TimeFormatter;
   formData?: BigNumberWithTrendlineFormData;
+  colorThresholdFormatters?: ColorFormatters;
 };
 
 class BigNumberVis extends React.PureComponent<BigNumberVisProps> {
@@ -154,8 +156,27 @@ class BigNumberVis extends React.PureComponent<BigNumberVisProps> {
   }
 
   renderHeader(maxHeight: number) {
-    const { bigNumber, headerFormatter, width } = this.props;
+    const { bigNumber, headerFormatter, width, colorThresholdFormatters } = this.props;
     const text = bigNumber === null ? t('No data') : headerFormatter(bigNumber);
+
+    const hasThresholdColorFormatter = 
+      Array.isArray(colorThresholdFormatters) &&
+      colorThresholdFormatters.length > 0;
+
+    let numberColor;
+    if (hasThresholdColorFormatter) {
+      colorThresholdFormatters!
+        .forEach(formatter => {
+          const formatterResult = bigNumber
+                  ? formatter.getColorFromValue(bigNumber as number)
+                  : false;
+          if (formatterResult) {
+            numberColor = formatterResult;
+          }
+        });
+    } else {
+      numberColor = 'black';      
+    }
 
     const container = this.createTemporaryContainer();
     document.body.append(container);
@@ -185,6 +206,7 @@ class BigNumberVis extends React.PureComponent<BigNumberVisProps> {
         style={{
           fontSize,
           height: maxHeight,
+          color: numberColor,
         }}
         onContextMenu={onContextMenu}
       >
